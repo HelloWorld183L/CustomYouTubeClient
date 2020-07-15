@@ -1,0 +1,22 @@
+﻿<Window x:Class="YouTubeClient.Client.Pages.ShellView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008;assembly=YouTubeClient.Client"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:s="https://github.com/canton7/Stylet"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:ViewModels="clr-namespace:YouTubeClient.Client.ViewModels"
+        xmlns:UserControls="clr-namespace:YouTubeClient.Client.UserControls"
+        mc:Ignorable="d"
+        Title="Custom YouTube Client" Height="450" Width="800"
+        d:DataContext="{d:DesignInstance ViewModels:ShellViewModel, d:IsDesignTimeCreatable=True}">
+
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{s:Action LoadSubscriptionData}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    <Grid Margin="0,160,374,0">
+        <ListBox Margin="10,-150,0,10" ItemsSource="{Binding SubscriptionData}" />
+    </Grid>
+</Window>
