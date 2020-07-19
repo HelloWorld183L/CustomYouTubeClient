@@ -1,6 +1,6 @@
 ﻿using Stylet;
 using StyletIoC;
-using YouTubeClient.Client.Pages;
+using YouTubeClient.Client.ViewModels;
 
 namespace YouTubeClient.Client
 {

@@ -15,28 +15,42 @@ namespace YouTubeClient.Client
         private string[] _scope;
         private YouTubeService _youtubeService;
         private string _accessToken;
-        private string _refreshToken;
+        private const int maxVideoCount = 20;
+        private const int numOfSubscriptions = 20;
+
+        public async Task<IEnumerable<PlaylistItem>> GetPlaylistItemsAsync(string playlistId)
+        {
+            var getPlaylistItemsRequest = _youtubeService.PlaylistItems.List("contentDetails, snippet");
+            getPlaylistItemsRequest.MaxResults = maxVideoCount;
+            getPlaylistItemsRequest.PlaylistId = playlistId;
+            
+            var playlistItems = getPlaylistItemsRequest.Execute().Items;
+            return playlistItems;
+        }
+
+        public async Task<Channel> GetChannelAsync(string channelId)
+        {
+            var getChannelRequest = _youtubeService.Channels.List("contentDetails");
+            getChannelRequest.Id = channelId;
+
+            var channel = getChannelRequest.Execute().Items[0];
+            return channel;
+        }
+
+        public async Task<IEnumerable<Subscription>> GetSubscriptionsAsync()
+        {
+            var getSubscriptionRequest = _youtubeService.Subscriptions.List("snippet");
+            getSubscriptionRequest.Mine = true;
+            getSubscriptionRequest.MaxResults = numOfSubscriptions;
+
+            var subscriptions = getSubscriptionRequest.Execute();
+            return subscriptions.Items;
+        }
 
         public static Task<Client> CreateAsync()
         {
             var client = new Client();
             return client.SetUpClientAsync();
-        }
-
-        public async Task DownloadVideosAsync(int channelId)
-        {
-
-        }
-
-        public async Task<IList<Subscription>> GetSubscriptionsAsync(int numberOfSubscriptions)
-        {
-            var getSubscriptionsRequest = _youtubeService.Subscriptions.List("");
-            getSubscriptionsRequest.Mine = true;
-            getSubscriptionsRequest.MaxResults = numberOfSubscriptions;
-            getSubscriptionsRequest.AccessToken = _accessToken;
-
-            var subscriptions = getSubscriptionsRequest.Execute();
-            return subscriptions.Items;
         }
 
         private async Task<Client> SetUpClientAsync()
@@ -60,7 +74,6 @@ namespace YouTubeClient.Client
                                                                   CancellationToken.None, new FileDataStore("YouTubeClient"));
 
             _accessToken = credential.Token.AccessToken;
-            _refreshToken = credential.Token.RefreshToken;
             return new YouTubeService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = credential,
