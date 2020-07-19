@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace YouTubeClient.Client.Pages
+namespace YouTubeClient.Client.Views
 {
     public partial class ShellView : Window
     {
