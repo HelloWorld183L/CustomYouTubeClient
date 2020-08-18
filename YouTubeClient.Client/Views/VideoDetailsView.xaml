@@ -1,18 +1,22 @@
-﻿<Window x:Class="YouTubeClient.Client.Views.VideoDetailsView"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ViewModels="clr-namespace:YouTubeClient.Client.ViewModels"
+        xmlns:s="https://github.com/canton7/Stylet" x:Class="YouTubeClient.Client.Views.VideoDetailsView"
         mc:Ignorable="d"
-        Title="Video Title" Height="450" Width="800"
+        Title="Video Title" Height="496" Width="799"
         d:DataContext="{d:DesignInstance {x:Type ViewModels:VideoDetailsViewModel}}">
     <Grid>
-        <DataGrid Margin="10,10,10,10" ItemsSource="{Binding VideoDetailsOutput}" AutoGenerateColumns="False" CanUserResizeColumns="True">
+        <DataGrid Margin="10,10,10,89" ItemsSource="{Binding VideoDetailsOutput}" AutoGenerateColumns="False" CanUserResizeColumns="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Name" Binding="{Binding VideoName}" />
                 <DataGridTextColumn Header="Url" Binding="{Binding VideoUrl}" />
             </DataGrid.Columns>
         </DataGrid>
+        <Button Content="&gt;" Click= "{s:Action NextPage}" HorizontalAlignment="Left" Margin="729,423,0,0" VerticalAlignment="Top" Height="30" Width="60" FontSize="20"/>
+        <Button Content="&lt;" Click= "{s:Action PreviousPage}" HorizontalAlignment="Left" Margin="10,423,0,0" VerticalAlignment="Top" Height="30" Width="60" FontSize="20"/>
+        <Label Content="{Binding PageNumber}" HorizontalAlignment="Center" Margin="0,396,0,0" VerticalAlignment="Top"/>
     </Grid>
 </Window>

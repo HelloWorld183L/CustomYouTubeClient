@@ -6,6 +6,8 @@ using Google.Apis.YouTube.v3.Data;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using YouTubeClient.Client.Models;
+using YouTubeClient.Client.Responses;
 
 namespace YouTubeClient.Client
 {
@@ -14,21 +16,43 @@ namespace YouTubeClient.Client
         private Credentials _credentials;
         private string[] _scope;
         private YouTubeService _youtubeService;
-        private string _accessToken;
         private const int maxVideoCount = 20;
-        private const int numOfSubscriptions = 20;
 
-        public async Task<IEnumerable<PlaylistItem>> GetPlaylistItemsAsync(string playlistId)
+        public VideoDetailsListResponse GetVideoDetails(string pageToken, string channelId)
+        {
+            var channel = GetChannel(channelId);
+            var videoDetails = new List<VideoDetails>();
+            var playlistItemsResponse = GetPlaylistItems(channel.ContentDetails.RelatedPlaylists.Uploads,
+                                        pageToken);
+
+            foreach (var playlistItem in playlistItemsResponse.Items)
+            {
+                var videoDetailsItem = new VideoDetails(playlistItem.Snippet.Title,
+                                                        playlistItem.ContentDetails.VideoId);
+                videoDetails.Add(videoDetailsItem);
+            }
+
+            var videoDetailsResponse = new VideoDetailsListResponse
+            {
+                Items = videoDetails,
+                NextPageToken = playlistItemsResponse.NextPageToken,
+                PreviousPageToken = playlistItemsResponse.PrevPageToken
+            };
+            return videoDetailsResponse;
+        }
+
+        private PlaylistItemListResponse GetPlaylistItems(string playlistId, string pageToken)
         {
             var getPlaylistItemsRequest = _youtubeService.PlaylistItems.List("contentDetails, snippet");
             getPlaylistItemsRequest.MaxResults = maxVideoCount;
             getPlaylistItemsRequest.PlaylistId = playlistId;
-            
-            var playlistItems = getPlaylistItemsRequest.Execute().Items;
-            return playlistItems;
+            getPlaylistItemsRequest.PageToken = pageToken;
+
+            var playlistItemResponse = getPlaylistItemsRequest.Execute();
+            return playlistItemResponse;
         }
 
-        public async Task<Channel> GetChannelAsync(string channelId)
+        private Channel GetChannel(string channelId)
         {
             var getChannelRequest = _youtubeService.Channels.List("contentDetails");
             getChannelRequest.Id = channelId;
@@ -37,14 +61,15 @@ namespace YouTubeClient.Client
             return channel;
         }
 
-        public async Task<IEnumerable<Subscription>> GetSubscriptionsAsync()
+        public SubscriptionListResponse GetSubscriptions(string pageToken, int maxResults)
         {
             var getSubscriptionRequest = _youtubeService.Subscriptions.List("snippet");
             getSubscriptionRequest.Mine = true;
-            getSubscriptionRequest.MaxResults = numOfSubscriptions;
+            getSubscriptionRequest.MaxResults = maxResults;
+            getSubscriptionRequest.PageToken = pageToken;
 
-            var subscriptions = getSubscriptionRequest.Execute();
-            return subscriptions.Items;
+            var subscriptionsResponse = getSubscriptionRequest.Execute();
+            return subscriptionsResponse;
         }
 
         public static Task<Client> CreateAsync()
@@ -73,7 +98,6 @@ namespace YouTubeClient.Client
                 await GoogleWebAuthorizationBroker.AuthorizeAsync(clientSecrets, _scope, _credentials.Username,
                                                                   CancellationToken.None, new FileDataStore("YouTubeClient"));
 
-            _accessToken = credential.Token.AccessToken;
             return new YouTubeService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = credential,

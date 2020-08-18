@@ -19,6 +19,9 @@
     </Window.Resources>
     <Grid>
         <ListBox Margin="10,10,10,72" SelectedItem="{Binding SelectedSubscription}" ItemsSource="{Binding SubscriptionData}" DisplayMemberPath="Snippet.Title" />
-        <Button Content="View Details" Click="{s:Action DisplayVideoDetails}" HorizontalAlignment="Center" Margin="0,367,0,0" VerticalAlignment="Top" Height="31" Width="86"/>
+        <Button Content="View Details" Click="{s:Action DisplayVideoDetails}" HorizontalAlignment="Center" Margin="0,394,0,0" VerticalAlignment="Top" Height="30" Width="86"/>
+        <Button Content="&gt;" Click= "{s:Action NextPage}" HorizontalAlignment="Left" Margin="730,367,0,0" VerticalAlignment="Top" Height="30" Width="60" FontSize="20"/>
+        <Button Content="&lt;" Click= "{s:Action PreviousPage}" HorizontalAlignment="Left" Margin="10,368,0,0" VerticalAlignment="Top" Height="30" Width="60" FontSize="20"/>
+        <Label Content="{Binding PageNumber}" HorizontalAlignment="Center" Margin="0,368,0,0" VerticalAlignment="Top"/>
     </Grid>
 </Window>
