@@ -1,8 +1,6 @@
 ﻿using Google.Apis.YouTube.v3.Data;
 using Stylet;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using YouTubeClient.Client.Models;
 
 namespace YouTubeClient.Client.ViewModels
 {
@@ -10,6 +8,12 @@ namespace YouTubeClient.Client.ViewModels
     {
         private Client _youtubeClient;
         private IWindowManager _windowManager;
+        private const int defaultMaxResults = 20;
+        private string nextPageToken = "";
+        private string previousPageToken = "";
+
+        private int _currentProgress;
+        private int _pageNumber;
         private IEnumerable<Subscription> _subscriptionData;
         public IEnumerable<Subscription> SubscriptionData 
         {
@@ -21,35 +25,71 @@ namespace YouTubeClient.Client.ViewModels
             }
         }
         public Subscription SelectedSubscription { get; set; }
+        public int CurrentProgress 
+        { 
+            get { return _currentProgress; }
+            set
+            {
+                _currentProgress = value;
+                NotifyOfPropertyChange(nameof(CurrentProgress));
+            }
+        }
+        public int PageNumber
+        {
+            get { return _pageNumber; }
+            set
+            {
+                _pageNumber = value;
+                NotifyOfPropertyChange(nameof(PageNumber));
+            }
+        }
 
         public ShellViewModel(IWindowManager windowManager)
         {
             _windowManager = windowManager;
-        }
-
-        public async Task LoadSubscriptionData()
-        {
             var createClientTask = Client.CreateAsync();
             createClientTask.Wait();
             _youtubeClient = createClientTask.Result;
-            var subscriptions = await _youtubeClient.GetSubscriptionsAsync();
-            SubscriptionData = subscriptions;
+
+            PageNumber = 1;
         }
 
-        public async Task DisplayVideoDetails()
+        public void NextPage()
         {
-            var channel = await _youtubeClient.GetChannelAsync(SelectedSubscription.Snippet.ResourceId.ChannelId);
-            
-            var videoDetails = new List<VideoDetails>();
-            var playlistItems = await _youtubeClient.GetPlaylistItemsAsync(channel.ContentDetails.RelatedPlaylists.Uploads);
-            foreach (var playlistItem in playlistItems)
-            {
-                var videoDetailsItem = new VideoDetails(playlistItem.Snippet.Title,
-                                                        playlistItem.ContentDetails.VideoId);
-                videoDetails.Add(videoDetailsItem);
-            }
+            var subscriptionListResponse = _youtubeClient.GetSubscriptions(nextPageToken, defaultMaxResults);
+            nextPageToken = subscriptionListResponse.NextPageToken;
+            previousPageToken = subscriptionListResponse.PrevPageToken;
+            PageNumber++;
 
-            var videoDetailsViewModel = new VideoDetailsViewModel(videoDetails);
+            SubscriptionData = subscriptionListResponse.Items;
+        }
+
+        public void PreviousPage()
+        {
+            var subscriptionListResponse = _youtubeClient.GetSubscriptions(previousPageToken, defaultMaxResults);
+            previousPageToken = subscriptionListResponse.PrevPageToken;
+            nextPageToken = subscriptionListResponse.NextPageToken;
+            if (PageNumber > 1) PageNumber--;
+
+            SubscriptionData = subscriptionListResponse.Items;
+        }
+
+        public void LoadSubscriptionData()
+        {
+            var subscriptionListResponse = _youtubeClient.GetSubscriptions("", defaultMaxResults);
+            nextPageToken = subscriptionListResponse.NextPageToken;
+
+            SubscriptionData = subscriptionListResponse.Items;
+        }
+
+        public void DisplayVideoDetails()
+        {
+            var channelId = SelectedSubscription.Snippet.ResourceId.ChannelId;
+            var videoDetailsResponse = _youtubeClient.GetVideoDetails("",
+                                       channelId);
+
+            var videoDetailsViewModel = new VideoDetailsViewModel(videoDetailsResponse.Items, _youtubeClient,
+                                        channelId);
             _windowManager.ShowWindow(videoDetailsViewModel);
         }
     }
