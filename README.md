@@ -1,5 +1,2 @@
 # CustomYouTubeClient
-Custom YouTube "client" to defeat procrastination
-
-# Worth it?
-Ehhhh just use RSS feeds instead. Interesting project though.
+Custom YouTube client used to retrieve video links from subscriptions using the YouTube API. 
